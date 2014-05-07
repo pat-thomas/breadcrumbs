@@ -6,7 +6,10 @@
 
 (def debug-atom (atom {}))
 
-(defn lookup [])
+(defmacro lookup
+  [fn-name arg-name]
+  (let [namespace (keyword (str *ns*))]
+    (get-in @debug-atom [namespace (keyword (name fn-name)) (keyword (name arg-name))])))
 
 (defmacro trace-fn
   [body]
