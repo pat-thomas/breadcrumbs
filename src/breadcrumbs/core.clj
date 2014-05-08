@@ -17,11 +17,14 @@
   (let [[_ fn-name fn-args fn-body] body
         debug-key [(keyword (str *ns*)) (keyword fn-name)]]
     (when (empty? (get-in @debug-atom debug-key))
-      (swap! debug-atom assoc-in debug-key {}))
+      (swap! debug-atom assoc-in debug-key []))
     `(defn ~fn-name ~fn-args
-       (doseq [[arg-sym# arg-val#] (partition 2 (interleave '~fn-args ~fn-args))]
-         (let [arg-key# (conj ~debug-key (keyword (name arg-sym#)))]
-           (swap! debug-atom assoc-in arg-key# arg-val#)))
+       (let [capture-map# (reduce (fn [acc# [arg-sym# arg-val#]]
+                                    (let [arg-key# (keyword (name arg-sym#))]
+                                      (assoc acc# arg-key# arg-val#)))
+                                  {}
+                                  (partition 2 (interleave '~fn-args ~fn-args)))]
+         (swap! debug-atom update-in debug-key #(conj % capture-map#)))
        ~fn-body)))
 
 (defmacro untrace-fn
