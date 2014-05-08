@@ -12,10 +12,12 @@
     (get-in @debug-atom [namespace (keyword (name fn-name)) (keyword (name arg-name))])))
 
 (defmacro trace-fn
+  "When wrapped around a defn, redefines function to trace its calls"
   [body]
   (let [[_ fn-name fn-args fn-body] body
         debug-key [(keyword (str *ns*)) (keyword fn-name)]]
-    (swap! debug-atom assoc-in debug-key {})
+    (when (empty? (get-in @debug-atom debug-key))
+      (swap! debug-atom assoc-in debug-key {}))
     `(defn ~fn-name ~fn-args
        (doseq [[arg-sym# arg-val#] (partition 2 (interleave '~fn-args ~fn-args))]
          (let [arg-key# (conj ~debug-key (keyword (name arg-sym#)))]
