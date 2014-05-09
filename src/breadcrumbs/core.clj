@@ -1,8 +1,5 @@
-(ns breadcrumbs.core)
-
-(comment
-  "Utilities for tracing function calls"
-  )
+(ns ^{:doc "Utilities for tracing function calls"}
+  breadcrumbs.core)
 
 (def debug-atom (atom {}))
 
@@ -24,7 +21,7 @@
                                       (assoc acc# arg-key# arg-val#)))
                                   {}
                                   (partition 2 (interleave '~fn-args ~fn-args)))]
-         (swap! debug-atom update-in debug-key #(conj % capture-map#)))
+         (swap! debug-atom update-in ~debug-key #(conj % capture-map#)))
        ~fn-body)))
 
 (defmacro untrace-fn
@@ -32,11 +29,5 @@
   [fn-name & args])
 
 (comment
-
-  (trace-fn
-   (defn foo [a b c]
-     :bar))
-
-  (foo 1 2 3)
   
   )
