@@ -4,9 +4,19 @@
 (def debug-atom (atom {}))
 
 (defmacro lookup
-  [fn-name arg-name]
-  (let [namespace (keyword (str *ns*))]
-    (get-in @debug-atom [namespace (keyword (name fn-name)) (keyword (name arg-name))])))
+  ([fn-name]
+     (let [namespace (keyword (str *ns*))]
+       (-> debug-atom
+           deref
+           (get-in [namespace (keyword (name fn-name))])
+           last)))
+  ([fn-name arg-name]
+     (let [namespace (keyword (str *ns*))]
+       (-> debug-atom
+           deref
+           (get-in [namespace (keyword (name fn-name))])
+           last
+           (get (keyword (name arg-name)))))))
 
 (defmacro trace-fn
   "When wrapped around a defn, redefines function to trace its calls"
