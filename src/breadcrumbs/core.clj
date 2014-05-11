@@ -48,13 +48,18 @@
       (swap! debug-atom assoc-in debug-key {:calls      []
                                             :exceptions []}))
     `(defn ~fn-name ~fn-args
+       ;;(println '~normalized-fn-args)
+       (println '(list ~normalized-fn-args))
        (let [capture-map# {:values        (reduce (fn [acc# [arg-sym# arg-val#]]
                                                     (assoc acc# (keyword (name arg-sym#)) arg-val#))
                                                   {}
-                                                  (partition 2 (interleave '~normalized-fn-args ~normalized-fn-args)))
-                           ;;:argument-form '~fn-args
-                           }]
-         (swap! debug-atom update-in ~(conj debug-key :calls) #(conj % capture-map#))
+                                                  (partition 2 (interleave '~normalized-fn-args (list '~@normalized-fn-args))))
+                           :argument-form '~fn-args}]
+         (println capture-map#)
+         (swap! debug-atom
+                update-in
+                ~(conj debug-key :calls)
+                #(conj % capture-map#))
          (try
            ~fn-body
            (catch Exception e#
@@ -68,30 +73,3 @@
    default, uses the values of the arguments most recently passed to the function."
   [fn-name & args]
   :implement-me)
-
-
-(comment
-
-  (do (def debug-atom (atom {}))
-
-      (trace-fn
-       (defn foo [a]
-         (reverse a)))
-
-      (trace-fn
-       (defn times-two [c]
-         (* c 2)))
-
-      ;;(foo [:first :middle :last])
-      )
-
-  (trace-fn
-   (defn foo [a]
-     (reverse a)))
-  
-  (let [fn-args '[{:keys [a b c] :as things} arguments]]
-    (normalize-destructuring-args fn-args))
-  (let [fn-args '[a  & [b c d]]]
-    (normalize-destructuring-args fn-args))
-  
-  )
