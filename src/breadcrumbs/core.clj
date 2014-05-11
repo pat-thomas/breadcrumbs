@@ -51,8 +51,11 @@
                (throw e#))))))))
 
 (defmacro untrace-fn
-  "Given a function name, allows to be called with args captured by trace-fn"
-  [fn-name & args])
+  "Given a function name, allows to be called with args captured by trace-fn. By
+   default, uses the values of the arguments most recently passed to the function."
+  [fn-name & args]
+  :implement-me)
+
 
 (comment
   
