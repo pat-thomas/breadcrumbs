@@ -48,25 +48,22 @@
       (swap! debug-atom assoc-in debug-key {:calls      []
                                             :exceptions []}))
     `(defn ~fn-name ~fn-args
-       ;;(println '~normalized-fn-args)
-       (println '(list ~normalized-fn-args))
-       (let [capture-map# {:values        (reduce (fn [acc# [arg-sym# arg-val#]]
-                                                    (assoc acc# (keyword (name arg-sym#)) arg-val#))
-                                                  {}
-                                                  (partition 2 (interleave '~normalized-fn-args (list '~@normalized-fn-args))))
-                           :argument-form '~fn-args}]
-         (println capture-map#)
+       (let [normalized-arg-values# (list ~@normalized-fn-args)
+             capture-map#           {:values        (reduce (fn [acc# [arg-sym# arg-val#]]
+                                                              (assoc acc# (keyword (name arg-sym#)) arg-val#))
+                                                            {}
+                                                            (partition 2 (interleave '~normalized-fn-args normalized-arg-values#)))
+                                     :argument-form '~fn-args}]
          (swap! debug-atom
                 update-in
                 ~(conj debug-key :calls)
                 #(conj % capture-map#))
-         (try
-           ~fn-body
-           (catch Exception e#
-             (swap! debug-atom update-in ~(conj debug-key :exceptions) #(conj % {:message (.getMessage e#)
-                                                                                 :type    (.getClass e#)
-                                                                                 :args    capture-map#}))
-             (throw e#)))))))
+         (try ~fn-body
+              (catch Exception e#
+                (swap! debug-atom update-in ~(conj debug-key :exceptions) #(conj % {:message (.getMessage e#)
+                                                                                    :type    (.getClass e#)
+                                                                                    :args    capture-map#}))
+                (throw e#)))))))
 
 (defmacro untrace-fn
   "Given a function name, allows to be called with args captured by trace-fn. By
